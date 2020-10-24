@@ -10,36 +10,24 @@ $(function() {
   // Initialize variables
   var socket = window.socket;
   var user = window.user;
+  var username = user.username;
+
   var $window = $(window);
   var $messages = $('.messages'); // Messages area
   var $inputMessage = $('.inputMessage'); // Input message input box
+  $inputMessage.focus();
 
-  var username;
   var connected = false;
   var typing = false;
   var lastTypingTime;
 
   const addParticipantsMessage = (data) => {
-    var message = '';
-    if (data.numUsers === 1) {
-      message += "there's 1 participant";
+    if (data.users.length === 1) {
+      log("you are the only one online");
     } else {
-      message += "there are " + data.numUsers + " participants";
+      log("there are " + data.users.length + " participants");
     }
-    log(message);
   }
-
-  // Sets the client's username
-  const setUsername = () => {
-    username = user.username;
-
-    // Tell the server your username
-    socket.emit('add user', username);
-
-    $inputMessage.focus();
-  }
-
-  setUsername();
 
   // Sends a chat message
   const sendMessage = () => {
@@ -187,13 +175,9 @@ $(function() {
     }
     // When the client hits ENTER on their keyboard
     if (event.which === 13) {
-      if (username) {
-        sendMessage();
-        socket.emit('stop typing');
-        typing = false;
-      } else {
-        setUsername();
-      }
+      sendMessage();
+      socket.emit('stop typing');
+      typing = false;
     }
   });
 
@@ -214,10 +198,7 @@ $(function() {
   socket.on('login', (data) => {
     connected = true;
     // Display the welcome message
-    var message = "Welcome to Socket.IO Chat – ";
-    log(message, {
-      prepend: true
-    });
+    log("Welcome to Scopic simple chat application");
     addParticipantsMessage(data);
   });
 
@@ -255,9 +236,6 @@ $(function() {
 
   socket.on('reconnect', () => {
     log('you have been reconnected');
-    if (username) {
-      socket.emit('add user', username);
-    }
   });
 
   socket.on('reconnect_error', () => {

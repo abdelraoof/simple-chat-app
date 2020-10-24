@@ -1,4 +1,3 @@
-// Setup basic express server
 require('dotenv').config();
 
 var app = require('express')();
@@ -30,20 +29,32 @@ io.use(async (socket, next) => {
   const user = await fetchUser(socket.handshake.query.token);
   let room = socket.handshake.query.room;
   if (room === 'public-room' || room.split('-').includes(user.id.toString())) {
-    console.log(`Add ${user.username} to room: ${room}`);
+    // we store username & room in the socket session for this client
+    socket.username = user.username;
     socket.room = room;
     return next();
   }
   return next(new Error('authentication error'));
 });
 
-// Chatroom
-var numUsers = 0;
+let users = new Set();
 
 io.on('connection', (socket) => {
+  console.log(`Add ${socket.username} to room: ${socket.room}`);
   socket.join(socket.room);
 
-  var addedUser = false;
+  users.add(socket.username);
+
+  // send a list of online users to the client
+  socket.emit('login', {
+    users: [...users.values()]
+  });
+
+  // echo globally (all clients) that a person has connected
+  socket.broadcast.emit('user joined', {
+    username: socket.username,
+    users: [...users.values()]
+  });
 
   // when the client emits 'new message', this listens and executes
   socket.on('new message', (data) => {
@@ -51,24 +62,6 @@ io.on('connection', (socket) => {
     socket.to(socket.room).emit('new message', {
       username: socket.username,
       message: data
-    });
-  });
-
-  // when the client emits 'add user', this listens and executes
-  socket.on('add user', (username) => {
-    if (addedUser) return;
-
-    // we store the username in the socket session for this client
-    socket.username = username;
-    ++numUsers;
-    addedUser = true;
-    socket.emit('login', {
-      numUsers: numUsers
-    });
-    // echo globally (all clients) that a person has connected
-    socket.broadcast.emit('user joined', {
-      username: socket.username,
-      numUsers: numUsers
     });
   });
 
@@ -88,14 +81,12 @@ io.on('connection', (socket) => {
 
   // when the user disconnects.. perform this
   socket.on('disconnect', () => {
-    if (addedUser) {
-      --numUsers;
+    users.delete(socket.username);
 
-      // echo globally that this client has left
-      socket.broadcast.emit('user left', {
-        username: socket.username,
-        numUsers: numUsers
-      });
-    }
+    // echo globally that this client has left
+    socket.broadcast.emit('user left', {
+      username: socket.username,
+      users: [...users.values()]
+    });
   });
 });

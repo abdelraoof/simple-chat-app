@@ -102,37 +102,25 @@ $(function () {
 
   var socket = window.socket;
   var user = window.user;
+  var username = user.username;
   var $window = $(window);
   var $messages = $('.messages'); // Messages area
 
   var $inputMessage = $('.inputMessage'); // Input message input box
 
-  var username;
+  $inputMessage.focus();
   var connected = false;
   var typing = false;
   var lastTypingTime;
 
   var addParticipantsMessage = function addParticipantsMessage(data) {
-    var message = '';
-
-    if (data.numUsers === 1) {
-      message += "there's 1 participant";
+    if (data.users.length === 1) {
+      log("you are the only one online");
     } else {
-      message += "there are " + data.numUsers + " participants";
+      log("there are " + data.users.length + " participants");
     }
+  }; // Sends a chat message
 
-    log(message);
-  }; // Sets the client's username
-
-
-  var setUsername = function setUsername() {
-    username = user.username; // Tell the server your username
-
-    socket.emit('add user', username);
-    $inputMessage.focus();
-  };
-
-  setUsername(); // Sends a chat message
 
   var sendMessage = function sendMessage() {
     var message = $inputMessage.val(); // Prevent markup from being injected into the message
@@ -278,13 +266,9 @@ $(function () {
 
 
     if (event.which === 13) {
-      if (username) {
-        sendMessage();
-        socket.emit('stop typing');
-        typing = false;
-      } else {
-        setUsername();
-      }
+      sendMessage();
+      socket.emit('stop typing');
+      typing = false;
     }
   });
   $inputMessage.on('input', function () {
@@ -300,10 +284,7 @@ $(function () {
   socket.on('login', function (data) {
     connected = true; // Display the welcome message
 
-    var message = "Welcome to Socket.IO Chat – ";
-    log(message, {
-      prepend: true
-    });
+    log("Welcome to Scopic simple chat application");
     addParticipantsMessage(data);
   }); // Whenever the server emits 'new message', update the chat body
 
@@ -334,10 +315,6 @@ $(function () {
   });
   socket.on('reconnect', function () {
     log('you have been reconnected');
-
-    if (username) {
-      socket.emit('add user', username);
-    }
   });
   socket.on('reconnect_error', function () {
     log('attempt to reconnect has failed');
