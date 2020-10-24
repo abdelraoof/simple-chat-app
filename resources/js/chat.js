@@ -14,6 +14,7 @@ $(function() {
 
   var $window = $(window);
   var $messages = $('.messages'); // Messages area
+  var $onlineUsers = $('.online-users'); // Online Users area
   var $inputMessage = $('.inputMessage'); // Input message input box
   $inputMessage.focus();
 
@@ -22,6 +23,16 @@ $(function() {
   var lastTypingTime;
 
   const addParticipantsMessage = (data) => {
+    $onlineUsers.empty();
+    for (const onlineUser of data.users) {
+      var $onlineUserRoom = $('<a />')
+        .text(onlineUser)
+        .attr('href', '/' + onlineUser)
+        .css('color', getUsernameColor(onlineUser));
+      var $onlineUserDiv = $('<li class="online-user"/>')
+        .append($onlineUserRoom);
+      $onlineUsers.append($onlineUserDiv);
+    }
     if (data.users.length === 1) {
       log("you are the only one online");
     } else {
