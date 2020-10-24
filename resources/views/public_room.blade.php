@@ -17,13 +17,14 @@
 @push('body_assets')
 <script>
 $(function() {
+    window.user = {!! json_encode(auth()->user()->only('name', 'username', 'email', 'token')) !!};
+    window.room = 'public-room';
     window.socket = io('{{ env("SOCKET_IO_URL") }}:{{ env("SOCKET_IO_PORT") }}', {
         query: {
-            token: '{{ auth()->user()->token }}',
-            room: 'public-room'
+            token: window.user.token,
+            room: window.room
         }
     });
-    window.user = {!! json_encode(auth()->user()->only('name', 'username', 'email')) !!};
 });
 </script>
 

@@ -10,7 +10,10 @@ $(function() {
   // Initialize variables
   var socket = window.socket;
   var user = window.user;
-  var username = user.username;
+  var room = window.room;
+  var loadedAt = (new Date()).toLocaleString();
+  var currentPage = 1;
+  var reachedOldestMessage = false;
 
   var $window = $(window);
   var $messages = $('.messages'); // Messages area
@@ -22,6 +25,39 @@ $(function() {
   var typing = false;
   var lastTypingTime;
 
+  // get old messages
+  const getOldMessages = async (data) => {
+    if (reachedOldestMessage) {
+        return;
+    }
+    let response = await fetch(`/api/messages?room=${room}&older_than=${loadedAt}&page=${currentPage}&token=${user.token}`);
+    let responseData = await response.json();
+    for (const oldMessage of responseData.data) {
+      addChatMessage({
+        username: oldMessage.user.username,
+        message: oldMessage.message
+      }, {
+          prepend: true
+      });
+    }
+    currentPage++;
+    if (responseData.next_page_url == null) {
+        reachedOldestMessage = true;
+        log("no more messages", {
+          prepend: true
+        });
+    }
+  }
+
+  $messages.scroll(async () => {
+    if ($messages.scrollTop() == 0 && ! reachedOldestMessage) {
+      // get more old messages
+      await getOldMessages();
+      $messages[0].scrollTop = 0;
+    }
+  });
+
+  // print how many users are online
   const addParticipantsMessage = (data) => {
     $onlineUsers.empty();
     for (const onlineUser of data.users) {
@@ -49,7 +85,7 @@ $(function() {
     if (message && connected) {
       $inputMessage.val('');
       addChatMessage({
-        username: username,
+        username: user.username,
         message: message
       });
       // tell server to execute 'new message' and send along one parameter
@@ -206,11 +242,14 @@ $(function() {
   // Socket events
 
   // Whenever the server emits 'login', log the login message
-  socket.on('login', (data) => {
+  socket.on('login', async (data) => {
     connected = true;
     // Display the welcome message
     log("Welcome to Scopic simple chat application");
     addParticipantsMessage(data);
+
+    // get old messages
+    await getOldMessages();
   });
 
   // Whenever the server emits 'new message', update the chat body
