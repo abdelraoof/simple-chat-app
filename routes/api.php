@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:api')->get('/messages', function (Request $request) {
+    if ($request->room == 'public-room' || in_array($request->user()->id, explode('-', $request->room))) {
+        return \App\Models\Message::with('user:id,username')->whereRoom($request->room)
+            ->where('created_at', '<', \Carbon\Carbon::make($request->older_than))
+            ->latest()->paginate(20);
+    }
+    return abort(403);
 });
