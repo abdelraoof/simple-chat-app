@@ -264,4 +264,8 @@ $(function() {
     log('attempt to reconnect has failed');
   });
 
+  socket.on('error', (reason) => {
+    console.log(reason);
+  });
+
 });

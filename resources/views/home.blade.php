@@ -12,7 +12,12 @@
 @push('body_assets')
 <script>
 $(function() {
-    window.socket = io('http://localhost:3000');
+    window.socket = io('http://localhost:3000', {
+        query: {
+            token: '{{ auth()->user()->token }}',
+            room: 'public-room'
+        }
+    });
     window.user = {!! json_encode(auth()->user()->only('name', 'username', 'email')) !!};
 });
 </script>

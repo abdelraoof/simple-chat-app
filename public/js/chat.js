@@ -342,6 +342,9 @@ $(function () {
   socket.on('reconnect_error', function () {
     log('attempt to reconnect has failed');
   });
+  socket.on('error', function (reason) {
+    console.log(reason);
+  });
 });
 
 /***/ }),
