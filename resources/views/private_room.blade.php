@@ -12,7 +12,7 @@
 @push('body_assets')
 <script>
 $(function() {
-    window.socket = io('http://localhost:3000', {
+    window.socket = io('{{ env("SOCKET_IO_URL") }}:{{ env("SOCKET_IO_PORT") }}', {
         query: {
             token: '{{ auth()->user()->token }}',
             room: '{{ implode('-', Arr::sort([auth()->user()->id, $user->id])) }}'
