@@ -1,4 +1,15 @@
-# Scopic PHP/Laravel Test Task: Simple chat application
+# Simple chat application with Laravel & Socket.IO
+
+## Requirements
+- PHP >= 7.3
+- MySQL 5.6+
+- Node.js 10+
+
+## Tech stack
+- Laravel
+- MySQL
+- Socket.IO
+- Sequelize 
 
 ## How to use
 - Install dependencies
@@ -20,4 +31,4 @@ $ npm run start-socket-server
 $ php artisan serve
 ```
 
-- Then point your browser to http://localhost:8000
+- Point your browser to http://localhost:8000
