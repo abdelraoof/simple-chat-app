@@ -1,11 +1,13 @@
 // Setup basic express server
+require('dotenv').config();
+
 var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var port = process.env.PORT || 3000;
 
 const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = new Sequelize('mysql://root:@localhost:3306/scopic-task')
+const sequelize = new Sequelize(`${process.env.DB_CONNECTION}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`);
 
 class User extends Model {}
 User.init({
