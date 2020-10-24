@@ -1,23 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Dashboard') }}</div>
-
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    {{ __('You are logged in!') }}
-                </div>
-            </div>
-        </div>
+<div class="chat-container">
+    <div class="chat-area">
+        <ul class="messages"></ul>
     </div>
+    <input class="inputMessage" placeholder="Type here...">
 </div>
 @endsection
+
+@push('body_assets')
+<script>
+$(function() {
+    window.socket = io('http://localhost:3000');
+    window.user = {!! json_encode(auth()->user()->only('name', 'username', 'email')) !!};
+});
+</script>
+
+<script src="{{ asset('js/chat.js') }}"></script>
+@endpush
