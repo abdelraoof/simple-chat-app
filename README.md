@@ -25,6 +25,11 @@ $ php artisan key:gen
 $ nano .env
 ```
 
+- Run the database migrations
+```
+$ php artisan migrate
+```
+
 - Run Socket.IO server & PHP server
 ```
 $ npm run start-socket-server
